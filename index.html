@@ -286,6 +286,9 @@ dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
 .g-track[hidden]{display:none}
 .g-track i{display:block;height:100%;background:var(--ok);border-radius:99px;transform-origin:left;transform:scaleX(0);transition:transform 400ms var(--ease)}
 .g-track.over i{background:var(--warn)}
+.g-cop{margin:-4px 0 0;color:var(--muted);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.paid-in .g-cop{margin:0;font-size:13px}
+.g-left span{color:var(--muted);font-weight:500;font-variant-numeric:tabular-nums}
 .g-left{margin:0;font-weight:600;color:var(--ok)}
 .g-left.over{color:var(--warn)}
 .g-budget{display:grid;gap:6px;margin-top:6px;font-size:14px;color:var(--muted)}
@@ -383,10 +386,11 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:v
   <form method="dialog" class="sheet-in">
     <div class="sheet-head"><h2 id="g-title">Gastos</h2><button class="sheet-x" value="close" aria-label="Cerrar"><svg aria-hidden="true"><use href="#i-x"/></svg></button></div>
     <p class="g-total" id="g-total">$0,00</p>
+    <p class="g-cop" id="g-total-cop"></p>
     <p class="g-sub" id="g-sub"></p>
     <div class="g-track" aria-hidden="true"><i id="g-bar"></i></div>
     <p class="g-left" id="g-left" hidden></p>
-    <label class="g-budget"><span>Presupuesto total (opcional)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"></span></label>
+    <label class="g-budget"><span>Presupuesto en dólares (1.266.000 COP a 3.700)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"><span class="g-cop" id="g-budget-cop"></span></span></label>
     <p class="g-note">Anota en cada producto comprado lo que pagaste en caja, con impuesto. Todo queda guardado en este teléfono.</p>
     <button type="button" class="g-see" id="g-see">Ver lo comprado</button>
   </form>
@@ -507,10 +511,16 @@ function shelf(v){
 let state={};try{const raw=JSON.parse(localStorage.getItem("miami-done")||"{}");for(const k in raw){if(raw[k]===true||raw[k]==="ok")state[k]="ok";else if(raw[k]==="na")state[k]="na"}}catch(e){}
 const save=()=>{try{localStorage.setItem("miami-done",JSON.stringify(state))}catch(e){}};
 /* Gastos: lo que pagó por cada producto (USD, con impuesto) y presupuesto opcional */
-let paid={},budget=0;
-try{paid=JSON.parse(localStorage.getItem("miami-paid")||"{}")||{};budget=+localStorage.getItem("miami-budget")||0}catch(e){}
+const BUDGET_COP=1266000;     /* presupuesto de Sofía en pesos; se convierte con TRM */
+const BUDGET_USD=Math.round(BUDGET_COP/TRM*100)/100;
+let paid={},budget=BUDGET_USD;
+try{paid=JSON.parse(localStorage.getItem("miami-paid")||"{}")||{};const b=localStorage.getItem("miami-budget");if(b!==null)budget=+b||0}catch(e){}
 const savePaid=()=>{try{localStorage.setItem("miami-paid",JSON.stringify(paid));localStorage.setItem("miami-budget",String(budget||""))}catch(e){}};
 const money=n=>"$"+n.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
+const copFmt=p=>"$"+Math.round(p).toLocaleString("es-CO")+" COP";
+const pesos=n=>copFmt(n*TRM);
+/* Presupuesto en pesos: exacto si es el de Sofía (evita 1.265.992 por redondeo) */
+const budgetCop=()=>budget===BUDGET_USD?BUDGET_COP:budget*TRM;
 const parseMoney=s=>{s=String(s).replace(/[^\d.,]/g,"");if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");const n=parseFloat(s);return isFinite(n)&&n>0?Math.round(n*100)/100:0};
 let store="";try{store=localStorage.getItem("miami-store")||""}catch(e){}
 /* Búsqueda: sin tildes ni mayúsculas; todas las palabras deben aparecer */
@@ -644,9 +654,11 @@ function updateSpent(){
   btn.setAttribute("aria-label",`Gastos: ${money(total)}${budget?` de ${money(budget)}`:""}. Abrir resumen`);
   const d=$("#gastos");if(!d.open)return;
   $("#g-total").textContent=money(total);
+  $("#g-total-cop").textContent="≈ "+pesos(total);
   $("#g-sub").textContent=`${count} ${count===1?"compra":"compras"}${missing?` · ${missing} sin precio anotado`:""}`;
   const left=$("#g-left");
-  if(budget){left.hidden=false;left.classList.toggle("over",!!over);left.textContent=over?`Te pasaste por ${money(total-budget)}`:`Quedan ${money(budget-total)}`}else left.hidden=true;
+  if(budget){left.hidden=false;left.classList.toggle("over",!!over);const d=Math.abs(budget-total),dc=Math.abs(budgetCop()-total*TRM);left.innerHTML=`${over?"Te pasaste por":"Quedan"} ${money(d)} <span>≈ ${copFmt(dc)}</span>`}else left.hidden=true;
+  $("#g-budget-cop").textContent=budget?`≈ ${copFmt(budgetCop())}`:"";
   $(".g-track").hidden=!budget;$(".g-track").classList.toggle("over",!!over);
   $("#g-bar").style.transform=`scaleX(${budget?Math.min(total/budget,1):0})`;
 }
