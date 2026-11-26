@@ -379,7 +379,7 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:v
 
   <main id="main"></main>
   <div class="empty" id="empty"><b id="empty-t"></b><span id="empty-msg"></span></div>
-  <footer>Lista armada el 26 de noviembre de 2026. Los precios de Amazon son de Black Friday y pueden cambiar. Pesos convertidos a 3.700 COP por dólar.</footer>
+  <footer>Lista armada el 26 de noviembre de 2026. Los precios de Amazon son de Black Friday y pueden cambiar. Pesos convertidos a 3.548 COP por dólar.</footer>
 </div>
 
 <dialog class="sheet" id="gastos" aria-labelledby="g-title">
@@ -390,7 +390,7 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:v
     <p class="g-sub" id="g-sub"></p>
     <div class="g-track" aria-hidden="true"><i id="g-bar"></i></div>
     <p class="g-left" id="g-left" hidden></p>
-    <label class="g-budget"><span>Presupuesto en dólares (1.266.000 COP a 3.700)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"><span class="g-cop" id="g-budget-cop"></span></span></label>
+    <label class="g-budget"><span>Presupuesto en dólares (1.266.000 COP a 3.548)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"><span class="g-cop" id="g-budget-cop"></span></span></label>
     <p class="g-note">Anota en cada producto comprado lo que pagaste en caja, con impuesto. Todo queda guardado en este teléfono.</p>
     <button type="button" class="g-see" id="g-see">Ver lo comprado</button>
   </form>
@@ -460,7 +460,7 @@ const TAG={fijo:["t-fijo","Este exacto"],ref:["t-ref","Referencia"],wa:["t-wa","
 
 /* Ajustes */
 const WA="573006500408";      /* WhatsApp de Sofía */
-const TRM=3700;               /* pesos por dólar para las referencias en COP */
+const TRM=3548;               /* pesos por dólar (actualizada el 26-nov-2026) */
 const TAX=0.07;               /* impuesto de venta en Miami-Dade */
 
 /* Dónde se consigue cada producto, en el mismo orden de CATS */
@@ -514,8 +514,11 @@ const save=()=>{try{localStorage.setItem("miami-done",JSON.stringify(state))}cat
 const BUDGET_COP=1266000;     /* presupuesto de Sofía en pesos; se convierte con TRM */
 const BUDGET_USD=Math.round(BUDGET_COP/TRM*100)/100;
 let paid={},budget=BUDGET_USD;
-try{paid=JSON.parse(localStorage.getItem("miami-paid")||"{}")||{};const b=localStorage.getItem("miami-budget");if(b!==null)budget=+b||0}catch(e){}
-const savePaid=()=>{try{localStorage.setItem("miami-paid",JSON.stringify(paid));localStorage.setItem("miami-budget",String(budget||""))}catch(e){}};
+/* El presupuesto solo se guarda si ella lo cambia a mano; así, si cambia la tasa, el de Sofía se recalcula.
+   342.16 era el presupuesto por defecto con la tasa anterior (3.700): se ignora. */
+try{paid=JSON.parse(localStorage.getItem("miami-paid")||"{}")||{};const b=localStorage.getItem("miami-budget");if(b!==null&&b!=="342.16")budget=+b||0}catch(e){}
+const savePaid=()=>{try{localStorage.setItem("miami-paid",JSON.stringify(paid))}catch(e){}};
+const saveBudget=()=>{try{localStorage.setItem("miami-budget",String(budget||""))}catch(e){}};
 const money=n=>"$"+n.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
 const copFmt=p=>"$"+Math.round(p).toLocaleString("es-CO")+" COP";
 const pesos=n=>copFmt(n*TRM);
@@ -685,7 +688,7 @@ items.forEach(item=>{
 /* Ventana de gastos */
 const gastos=$("#gastos"),gBudget=$("#g-budget");
 $("#spent").addEventListener("click",()=>{gBudget.value=budget?budget.toFixed(2).replace(".",","):"";gastos.showModal();updateSpent()});
-gBudget.addEventListener("input",()=>{budget=parseMoney(gBudget.value);savePaid();updateSpent()});
+gBudget.addEventListener("input",()=>{budget=parseMoney(gBudget.value);saveBudget();updateSpent()});
 gBudget.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();gBudget.blur()}});
 gastos.addEventListener("click",e=>{if(e.target===gastos)gastos.close()});
 $("#g-see").addEventListener("click",()=>{gastos.close();$("#tab-ok").click();window.scrollTo({top:Math.max(0,$("header").getBoundingClientRect().bottom+scrollY-8),behavior:reduce?"auto":"smooth"})});
