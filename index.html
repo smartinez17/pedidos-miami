@@ -1,0 +1,595 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<!-- iPhone: abrir desde la pantalla de inicio como app -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pedidos Miami">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#f6f1f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#171119" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+</head><body>
+<title>Lista de compras Miami</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: lista de compras de bolsillo para usar en la tienda. Barra fija con filtro Pendientes/Comprados y secciones; fichas con galería deslizable, datos clave y casilla grande. */
+:root{
+  --bg:#f6f1f4; --surface:#ffffff; --sunk:#f1e9ee; --fg:#2a1d2a; --muted:#6c5b6b; --line:#e7dce3;
+  --accent:#c22e69; --accent-soft:#fbe2ec; --ok:#1d7a4c; --ok-soft:#dcf1e5; --ref:#5a49a0; --ref-soft:#ebe6fa;
+  --shadow:0 0 0 1px oklch(0.3 0.05 340 / 0.06), 0 1px 2px oklch(0.3 0.05 340 / 0.06), 0 8px 24px -12px oklch(0.3 0.08 340 / 0.18);
+  --img-outline:oklch(0 0 0 / 0.1);
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,sans-serif;
+  /* transitions.dev tokens */
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --check-box:150ms; --check-draw:350ms; --check-uncheck:150ms;
+  --tabs-dur:250ms; --subtle-dur:455ms; --subtle-distance:0.14em; --subtle-blur:0.042em;
+  --toast-open:350ms; --toast-close:350ms; /* transitions.dev: toast close = --duration-medium */
+  --r-card:20px; --pad-card:14px; --r-inner:6px; /* 20 = 6 + 14: radios concéntricos */
+  --r-pic:12px; --pad-pic:8px; /* 20 = 12 + 8: foto enmarcada dentro de la ficha */
+  --sun:#f07a3c; --hero-a:#ffd3e4; --hero-b:#ffe2c7; --hero-c:#efe3ff;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171119; --surface:#221923; --sunk:#2b202d; --fg:#f4eaf1; --muted:#b6a4b4; --line:#3a2c3b;
+  --accent:#ff7bae; --accent-soft:#46202f; --ok:#6fd5a0; --ok-soft:#163326; --ref:#bcaeff; --ref-soft:#2a2446;
+  --shadow:0 0 0 1px oklch(1 0 0 / 0.06), 0 8px 24px -12px oklch(0 0 0 / 0.6);
+  --img-outline:oklch(1 0 0 / 0.1); --sun:#ffab73; --hero-a:#4d1d33; --hero-b:#46281a; --hero-c:#2c2148; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171119; --surface:#221923; --sunk:#2b202d; --fg:#f4eaf1; --muted:#b6a4b4; --line:#3a2c3b;
+  --accent:#ff7bae; --accent-soft:#46202f; --ok:#6fd5a0; --ok-soft:#163326; --ref:#bcaeff; --ref-soft:#2a2446;
+  --shadow:0 0 0 1px oklch(1 0 0 / 0.06), 0 8px 24px -12px oklch(0 0 0 / 0.6);
+  --img-outline:oklch(1 0 0 / 0.1); --sun:#ffab73; --hero-a:#4d1d33; --hero-b:#46281a; --hero-c:#2c2148; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--body);margin:0;accent-color:var(--accent);caret-color:var(--accent)}
+html{scrollbar-color:color-mix(in oklch,var(--accent) 35%,var(--line)) var(--bg)}
+::selection{background:var(--accent-soft);color:var(--fg)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+p,li,dd{text-wrap:pretty}
+.wrap{max-width:1120px;margin:0 auto;padding-block:32px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Encabezado: bloque tipo atardecer */
+header{position:relative;isolation:isolate;overflow:hidden;border-radius:28px;padding:26px 18px 18px;margin-bottom:18px;background:var(--surface);box-shadow:var(--shadow)}
+header::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(90% 120% at 0% 0%,var(--hero-a),transparent 62%),radial-gradient(80% 110% at 100% 0%,var(--hero-b),transparent 58%),radial-gradient(70% 80% at 100% 100%,var(--hero-c),transparent 60%)}
+@media (min-width:720px){header{padding:40px 36px 28px}}
+header h1{font:800 2.4rem/0.98 var(--display);margin:0 0 12px;letter-spacing:-0.035em;text-wrap:balance}
+@media (min-width:720px){header h1{font-size:3.6rem}}
+header h1 span{color:var(--accent);display:inline-block}
+.lead{color:var(--muted);max-width:58ch;margin:0 0 18px;font-size:16px}
+/* Reglas: lista con divisores, no tarjetas */
+.rules{display:grid;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+@media (min-width:860px){.rules{grid-template-columns:repeat(3,1fr);column-gap:28px}}
+.rules li{padding:12px 0;font-size:13.5px;color:var(--muted);display:grid;grid-template-columns:20px 1fr;gap:2px 12px;align-items:start;border-bottom:1px solid var(--line)}
+@media (min-width:860px){.rules li{border-bottom:0}}
+.rules svg{grid-row:span 2;width:20px;height:20px;margin-top:1px;color:var(--accent);stroke-width:2}
+.rules b{font:600 14.5px/1.35 var(--body);color:var(--fg)}
+
+/* Barra fija */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.bar-wrap{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:color-mix(in oklch,var(--bg) 88%,transparent);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);margin-inline:-16px;padding:10px 16px 10px;border-bottom:1px solid transparent;transition:border-color 200ms var(--ease)}
+.bar-wrap.stuck{border-bottom-color:var(--line)}
+.status{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.count{font:600 15px var(--body);white-space:nowrap}
+.count .num{font-variant-numeric:tabular-nums}
+.progress{flex:1 1 140px;height:10px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px;box-shadow:inset 0 0 0 1px var(--line)}
+.progress i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--sun));border-radius:99px;transform-origin:left;transform:scaleX(0);transition:transform 500ms var(--ease)}
+
+/* Segmented control con pill deslizante (transitions.dev: tabs sliding) */
+.t-tabs{position:relative;display:inline-flex;align-items:center;gap:3px;padding:3px;border-radius:99px;background:var(--sunk)}
+.t-tab{position:relative;appearance:none;border:0;background:transparent;min-height:34px;padding:4px 14px;color:var(--muted);font:500 14px var(--body);cursor:pointer;border-radius:99px;z-index:1;transition:color var(--tabs-dur) var(--ease)}
+.t-tab[aria-selected="true"],.t-tab:hover{color:var(--fg)}
+.t-tab .n{font-variant-numeric:tabular-nums;opacity:.7;margin-left:4px}
+.t-tabs-pill{position:absolute;top:3px;left:0;height:calc(100% - 6px);width:0;background:var(--surface);box-shadow:0 1px 2px oklch(0 0 0 / .08),0 2px 8px -2px oklch(0 0 0 / .12);border-radius:99px;transition:transform var(--tabs-dur) var(--ease),width var(--tabs-dur) var(--ease);z-index:0;pointer-events:none}
+
+/* Navegación por secciones */
+.sections{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px;mask-image:linear-gradient(90deg,#000 85%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent)}
+.sections::-webkit-scrollbar{display:none}
+.sections a{flex:none;text-decoration:none;color:var(--muted);padding:7px 12px;border-radius:99px;font-size:13px;font-weight:500;position:relative;transition:color 150ms var(--ease),background-color 150ms var(--ease)}
+.sections a:hover{color:var(--fg)}
+.sections a.active{color:var(--accent);background:var(--accent-soft)}
+.sections a .n{font-variant-numeric:tabular-nums;opacity:.6;margin-left:3px}
+
+section{margin-top:44px;scroll-margin-top:calc(var(--bar-h,130px) + 12px)}
+
+/* Instrucciones plegables */
+.howto summary{list-style:none;display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font:600 14.5px var(--body);color:var(--accent);border-top:1px solid var(--line)}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary svg{width:16px;height:16px;flex:none;transition:rotate 250ms var(--ease)}
+.howto[open] summary svg{rotate:90deg}
+
+/* Táctil */
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* Pantallas anchas de celular (iPhone Pro Max: 430 px): fotos un poco más grandes */
+@media (min-width:400px) and (max-width:600px){.pics{min-height:240px}.pics img{height:240px}}
+button,a,select,input,summary{touch-action:manipulation}
+
+/* Celular: la página se usa aquí */
+@media (max-width:600px){
+  .wrap{padding-block:12px 56px}
+  header{padding:20px 16px 4px;border-radius:24px;margin-bottom:10px}
+  header h1{font-size:2.1rem;margin-bottom:8px}
+  .lead{font-size:15px;line-height:1.5;margin-bottom:10px}
+  .bar-wrap{padding:8px 16px}
+  .status{position:absolute;left:0;right:0;bottom:-1px;margin:0;gap:0}
+  .count{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .progress{flex:1;height:3px;min-width:0;border-radius:0;box-shadow:none;background:transparent}
+  .progress i{border-radius:0}
+  .t-tabs{display:flex;width:100%}
+  .t-tab{flex:1 1 auto}
+  .sections{margin-top:6px}
+  section{margin-top:28px}
+  section h2{font-size:1.45rem}
+  section .sub{font-size:13.5px;margin-bottom:12px}
+  .grid{gap:12px}
+  .pics{min-height:210px}
+  .pics img{height:210px}
+  .body{padding:12px 14px 14px;gap:9px}
+  .t-toast{bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}
+section h2{font:700 1.65rem/1.15 var(--display);margin:0 0 6px;letter-spacing:-0.02em;text-wrap:balance;display:flex;align-items:center;gap:10px}
+section h2 .h-n{font:600 13px/1 var(--body);padding:5px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:0}
+section .sub{color:var(--muted);font-size:14px;margin:0 0 16px;max-width:70ch}
+section[hidden]{display:none}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+@media (max-width:420px){.grid{grid-template-columns:1fr}}
+
+/* Ficha */
+.item{background:var(--surface);border-radius:var(--r-card);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-width:0;transition:opacity 250ms var(--ease),filter 250ms var(--ease),translate 250ms var(--ease),box-shadow 250ms var(--ease)}
+@media (hover:hover){.item:not(.done):hover{translate:0 -3px;box-shadow:var(--shadow),0 18px 36px -18px oklch(0.4 0.15 350 / .35)}}
+.item.done{opacity:.62}
+.item.done .gallery{filter:grayscale(.6)}
+.item[hidden]{display:none}
+.gallery{position:relative;margin:var(--pad-pic) var(--pad-pic) 0;border-radius:var(--r-pic);overflow:hidden;background:#fff;transition:filter 250ms var(--ease)}
+.pics{display:flex;min-height:240px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.pics::-webkit-scrollbar{display:none}
+.pics .pic{flex:0 0 100%;position:relative;margin:0;scroll-snap-align:center}
+.pics img{width:100%;height:240px;aspect-ratio:auto;object-fit:contain;background:#fff;display:block}
+.opt{position:absolute;top:10px;right:10px;z-index:1;max-width:calc(100% - 20px);padding:4px 10px;border-radius:99px;background:oklch(0.25 0.03 340 / .78);color:#fff;font:600 12px/1.3 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.opt.first{background:#c22e69}
+.opt.only-ref{background:#9a5600}
+.gallery::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--img-outline);pointer-events:none}
+.item.done .gallery::before{content:"Comprado";position:absolute;top:10px;left:10px;z-index:2;padding:5px 10px;border-radius:99px;background:var(--ok);color:var(--surface);font:600 12px var(--body);letter-spacing:.03em}
+.arrow{position:absolute;top:50%;z-index:2;width:34px;height:34px;margin-top:-17px;display:grid;place-items:center;border:0;border-radius:99px;background:oklch(1 0 0 / .92);color:#2a1d2a;box-shadow:0 2px 8px -2px oklch(0 0 0 / .3);cursor:pointer;opacity:0;transition:opacity 150ms var(--ease),scale 150ms var(--ease)}
+.arrow svg{width:16px;height:16px}
+.arrow::before,.t-tab::before,.sections a::before{content:"";position:absolute;inset:-5px}
+.t-tab::before,.sections a::before{inset:-5px 0}
+.arrow.prev{left:8px}.arrow.next{right:8px}
+.arrow:active{scale:.92}
+.arrow:disabled{opacity:0!important;pointer-events:none}
+@media (hover:hover){.gallery:hover .arrow,.arrow:focus-visible{opacity:1}}
+.dots{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);display:flex;gap:5px;padding:5px 7px;border-radius:99px;background:oklch(0 0 0 / .38);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.dots i{width:6px;height:6px;border-radius:99px;background:oklch(1 0 0 / .55);transition:width 250ms var(--ease),background-color 250ms var(--ease)}
+.dots i.on{width:16px;background:#fff}
+.noimg{min-height:132px;flex:0 0 100%;display:grid;place-items:center;gap:6px;align-content:center;margin:var(--pad-pic) var(--pad-pic) 0;border-radius:var(--r-pic);background:repeating-linear-gradient(-45deg,var(--accent-soft) 0 12px,color-mix(in oklch,var(--accent-soft) 70%,var(--surface)) 12px 24px);color:var(--accent);font:600 15px var(--display);text-align:center;padding:12px}
+.pics .noimg{margin:0;border-radius:0}
+.noimg svg{width:26px;height:26px}
+.body{padding:var(--pad-card) 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:var(--r-inner)}
+.t-fijo{background:var(--ok-soft);color:var(--ok)}
+.t-ref{background:var(--ref-soft);color:var(--ref)}
+.t-wa{background:var(--accent-soft);color:var(--accent)}
+.item h3{font:700 1.125rem/1.25 var(--display);margin:0;letter-spacing:-0.01em;text-wrap:balance}
+.desc{margin:0;font-size:14px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px;background:var(--sunk);border-radius:12px;padding:10px 12px}
+dt{color:var(--muted)}
+dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);margin:0;display:grid;grid-template-columns:16px 1fr;gap:8px;align-items:start}
+.note svg{width:16px;height:16px;margin-top:2px;color:var(--accent)}
+
+/* Casilla (transitions.dev: checkbox check) */
+.buy{margin-top:auto;display:flex;align-items:center;gap:12px;min-height:50px;padding:6px 14px 6px 10px;border:0;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--accent-soft);color:var(--fg);font:600 15px var(--body);cursor:pointer;text-align:left;transition:background-color 200ms var(--ease),box-shadow 200ms var(--ease),scale 150ms var(--ease)}
+@media (hover:hover){.buy:hover{background:var(--accent-soft)}.buy:hover .t-check{box-shadow:inset 0 0 0 1.5px var(--accent)}}
+.buy:active{scale:.96}
+.buy[aria-checked="true"],.buy[aria-checked="true"]:hover{background:var(--ok-soft);box-shadow:none;color:var(--ok)}
+.t-check{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line);transition:background var(--check-box) var(--ease),box-shadow var(--check-box) var(--ease)}
+.t-check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.t-check path{stroke-dasharray:var(--check-len,15);stroke-dashoffset:var(--check-len,15);transition:stroke-dashoffset var(--check-uncheck) var(--ease)}
+.buy[aria-checked="true"] .t-check{background:var(--ok);box-shadow:inset 0 0 0 1.5px var(--ok)}
+.buy[aria-checked="true"] .t-check path{stroke-dashoffset:0;transition:stroke-dashoffset var(--check-draw) var(--ease)}
+
+/* Acciones secundarias: No había y WhatsApp */
+:root{--warn:#9a5600;--warn-soft:#fdebd3}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--warn:#ffbf73;--warn-soft:#3d2a13}}
+:root[data-theme="dark"]{--warn:#ffbf73;--warn-soft:#3d2a13}
+.actions{margin-top:auto;display:flex;gap:8px;align-items:stretch}
+.actions .buy{flex:1;min-width:0;margin:0;gap:10px;padding-right:10px;white-space:nowrap}
+.buy-label{overflow:hidden;text-overflow:ellipsis}
+.na{flex:none;white-space:nowrap}
+.minor{display:flex;gap:8px}
+.wa{width:50px;padding:0}
+.wa svg{width:20px;height:20px}
+.na,.wa{display:flex;align-items:center;justify-content:center;gap:6px;min-height:50px;padding:6px 12px;border:0;border-radius:14px;background:var(--sunk);color:var(--muted);font:600 13.5px var(--body);text-decoration:none;cursor:pointer;transition:background-color 150ms var(--ease),color 150ms var(--ease),scale 150ms var(--ease)}
+.wa{color:var(--ok)}
+.na svg,.wa svg{width:17px;height:17px;flex:none}
+.na:active,.wa:active{scale:.96}
+@media (hover:hover){.na:hover{color:var(--warn);background:var(--warn-soft)}.wa:hover{background:var(--ok-soft)}}
+.na[aria-pressed="true"]{background:var(--warn-soft);color:var(--warn)}
+.item.missing{opacity:.72}
+.item.missing .gallery{filter:grayscale(.85)}
+.item.missing .gallery::before{content:"No había";position:absolute;top:10px;left:10px;z-index:2;padding:5px 10px;border-radius:99px;background:var(--warn);color:var(--surface);font:600 12px var(--body);letter-spacing:.03em}
+
+/* Precios */
+.shelf{display:table;margin-top:4px;padding:2px 8px;border-radius:6px;background:var(--ok-soft);color:var(--ok);font-size:12.5px;font-weight:600}
+.usd{color:var(--muted);font-weight:500;white-space:nowrap}
+
+/* Tienda */
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.t-tab{white-space:nowrap}
+@media (max-width:420px){.t-tab{padding:4px 9px;font-size:13.5px}.t-tab .n{margin-left:3px}}
+.where{position:relative;display:inline-flex;align-items:center;min-height:40px;padding-left:12px;border-radius:99px;background:var(--surface);box-shadow:0 0 0 1px var(--line);color:var(--accent)}
+.where svg{width:16px;height:16px;flex:none;pointer-events:none}
+.where select{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:var(--fg);font:500 14px var(--body);min-height:40px;padding:8px 32px 8px 8px;max-width:min(270px,70vw);cursor:pointer;text-overflow:ellipsis}
+.where select:focus-visible{outline:none}
+.where:has(select:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.where::after{content:"";position:absolute;right:14px;top:50%;width:6px;height:6px;border:solid var(--muted);border-width:0 1.5px 1.5px 0;transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.find{display:flex;gap:8px;flex:1 1 340px;min-width:0}
+.search{position:relative;flex:1;min-width:0;display:flex;align-items:center;min-height:40px;padding-left:12px;border-radius:99px;background:var(--surface);box-shadow:0 0 0 1px var(--line);color:var(--muted);transition:box-shadow 150ms var(--ease)}
+.search:focus-within{box-shadow:0 0 0 2px var(--accent)}
+.search svg{width:16px;height:16px;flex:none;pointer-events:none}
+.search input{flex:1;min-width:0;min-height:40px;border:0;background:transparent;color:var(--fg);font:500 16px var(--body);padding:6px 12px 6px 8px;outline:none}
+.search input::placeholder{color:var(--muted);opacity:1}
+.where{flex:none}
+@media (max-width:520px){.where select{max-width:40vw}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.na-line{color:var(--warn);font-weight:600}
+
+/* Número que cambia (transitions.dev: number subtle change) */
+.t-subtle-number{display:inline-flex;align-items:baseline;font-variant-numeric:tabular-nums}
+.t-subtle-slot{position:relative;display:inline-block}
+.t-subtle-new{display:inline-block}
+.t-subtle-old{position:absolute;inset:0;text-align:center;pointer-events:none}
+.t-subtle-number.is-animating .t-subtle-new{animation:t-subtle-in var(--subtle-dur) var(--ease) both}
+.t-subtle-number.is-animating .t-subtle-old{animation:t-subtle-out var(--subtle-dur) var(--ease) both}
+@keyframes t-subtle-in{from{transform:translateY(calc(var(--subtle-distance) * var(--subtle-dir,1)));opacity:0;filter:blur(var(--subtle-blur))}}
+@keyframes t-subtle-out{to{transform:translateY(calc(var(--subtle-distance) * var(--subtle-dir,1) * -1));opacity:0;filter:blur(var(--subtle-blur))}}
+
+/* Aviso con deshacer (transitions.dev: toast) */
+.t-toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;align-items:center;gap:14px;max-width:calc(100% - 32px);padding:10px 10px 10px 16px;border-radius:16px;background:var(--fg);color:var(--bg);font-size:14px;box-shadow:0 12px 32px -8px oklch(0 0 0 / .35);
+  opacity:0;translate:-50% 0;transform:translateY(16px) scale(.97);filter:blur(2px);pointer-events:none;
+  transition:opacity var(--toast-close) var(--ease),transform var(--toast-close) var(--ease),filter var(--toast-close) var(--ease)}
+.t-toast.is-open{opacity:1;transform:translateY(0) scale(1);filter:blur(0);pointer-events:auto;transition:opacity var(--toast-open) var(--ease),transform var(--toast-open) var(--ease),filter var(--toast-open) var(--ease)}
+.t-toast span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.t-toast button{flex:none;border:0;border-radius:10px;min-height:36px;padding:0 12px;background:color-mix(in oklch,var(--bg) 18%,transparent);color:var(--bg);font:600 14px var(--body);cursor:pointer;transition:scale 150ms var(--ease)}
+.t-toast button:active{scale:.96}
+
+.empty{display:none;text-align:center;color:var(--muted);padding:48px 16px}
+.empty.show{display:block}
+.empty b{display:block;font:700 1.25rem var(--display);color:var(--fg);margin-bottom:4px}
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;text-align:center}
+
+@media (prefers-reduced-motion:reduce){
+  .t-check,.t-check path,.t-tabs-pill,.t-tab,.t-toast,.progress i,.dots i,.item,.buy,.arrow,.na,.wa{transition:none!important}
+  .item:hover{translate:none!important}
+  .t-subtle-number .t-subtle-new{animation:none!important}
+  .t-subtle-number .t-subtle-old{display:none}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+  <symbol id="i-ruler" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15.5 15.5 3 21 8.5 8.5 21Z"/><path d="m7 11.5 2 2M10 8.5l2 2M13 5.5l2 2"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-9 9"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>Pedidos de Sofía <span>en Miami</span></h1>
+    <p class="lead">Todo lo que te encargo, por categoría, con foto de referencia, talla y precio máximo. Marca cada cosa cuando la compres; queda guardado en tu celular.</p>
+    <details class="howto" id="howto"><summary><svg aria-hidden="true"><use href="#i-right"/></svg>Cómo usar esta lista</summary>
+    <ul class="rules">
+      <li><svg aria-hidden="true"><use href="#i-tag"/></svg><b>Mira "Etiqueta hasta"</b>Es el precio máximo que puede decir la etiqueta; ya le quitamos el impuesto de 7% que cobran en caja. Si la etiqueta dice más, no lo compres: márcalo "No había" y lo pido yo por Amazon.</li>
+      <li><svg aria-hidden="true"><use href="#i-ruler"/></svg><b>Tallas</b>Zapatos: US 6,5 de mujer, o 5Y en talla juvenil (GS / Big Kids). Ropa: XS o S.</li>
+      <li><svg aria-hidden="true"><use href="#i-chat"/></svg><b>Elige tu tienda y escríbeme</b>Arriba, en "Todas las tiendas", escoge dónde estás y verás solo lo que hay ahí. Cada producto tiene un botón para escribirme por WhatsApp con el nombre ya puesto.</li>
+    </ul></details>
+  </header>
+
+  <div class="bar-wrap" id="bar">
+    <div class="status">
+      <span class="count"><span class="t-subtle-number num" id="done-n" aria-live="polite">0</span> de <span class="num" id="total-n">0</span> comprados<span class="na-line" id="na-line"></span></span>
+      <div class="progress" role="progressbar" aria-label="Avance de compras" aria-valuemin="0" id="pbar"><i id="fill"></i></div>
+    </div>
+    <div class="controls">
+      <div class="t-tabs" role="tablist" aria-label="Mostrar" id="tabs">
+        <span class="t-tabs-pill" aria-hidden="true"></span>
+        <button class="t-tab" role="tab" id="tab-todo" aria-selected="true" data-f="todo">Todo</button>
+        <button class="t-tab" role="tab" id="tab-pend" aria-selected="false" data-f="pend">Faltan<span class="n" id="n-pend"></span></button>
+        <button class="t-tab" role="tab" id="tab-ok" aria-selected="false" data-f="ok">Comprados<span class="n" id="n-ok"></span></button>
+        <button class="t-tab" role="tab" id="tab-na" aria-selected="false" data-f="na">No había<span class="n" id="n-na"></span></button>
+      </div>
+      <div class="find">
+        <label class="search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Buscar" aria-label="Buscar producto" autocomplete="off" enterkeyhint="search"></label>
+        <label class="where"><svg aria-hidden="true"><use href="#i-pin"/></svg><span class="sr">¿Dónde estoy?</span><select id="store" aria-label="¿Dónde estoy? Filtrar por tienda"></select></label>
+      </div>
+    </div>
+    <nav class="sections" id="nav" aria-label="Categorías"></nav>
+  </div>
+
+  <main id="main"></main>
+  <div class="empty" id="empty"><b id="empty-t"></b><span id="empty-msg"></span></div>
+  <footer>Lista armada el 26 de noviembre de 2026. Los precios de Amazon son de Black Friday y pueden cambiar. Pesos convertidos a 3.700 COP por dólar.</footer>
+</div>
+
+<div class="t-toast" id="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button type="button" id="undo">Deshacer</button></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+const K = "Ulta (sección K-beauty) o Target. Si no está o sale más caro, no lo compres.";
+const CATS = [
+ {id:"perfumes",name:"Perfumes",sub:"Perfumes árabes. Búscalos en perfumerías (Perfumania) o en los outlets (Dolphin Mall, Sawgrass Mills).",items:[
+  {n:"Lattafa Eclaire",d:"Frasco crema con tapa dorada que parece caramelo derretido. En una foto dice 'masculino', pero es de mujer.",img:["eclaire"],s:"fijo",f:{"Tamaño":"100 ml"}},
+  {n:"Lattafa Yara Collection",d:"Caja rosada con 4 minis de 5 ml: Yara Candy, Yara Tous, Yara Moi y Yara original.",img:["yara"],s:"fijo",f:{"Tamaño":"Set 4 × 5 ml"}},
+  {n:"Armaf Odyssey Candee",d:"Frasco de rayas rosadas y blancas con tapa en forma de taza. Es de Armaf, no de Lattafa.",img:["odyssey"],s:"fijo",f:{"Tamaño":"100 ml"}},
+ ]},
+ {id:"skincare",name:"Skincare",sub:"Marcas coreanas. Medicube está en Target y Ulta; Dr.Althea en Ulta.",items:[
+  {n:"Dr.Althea 345 Relief Cream & Mist Duo",d:"Kit con la crema y la bruma. Es la opción preferida. Si no hay kit, compra la crema (50 ml, máx. $18,90) y la bruma (100 ml, máx. $13,93) por separado.",img:["althea_duo","althea_crema","althea_mist"],s:"fijo",f:{"Máximo":"$28,14 el kit"},note:K},
+  {n:"Medicube PDRN Pink Peptide Eye Cream",d:"Contorno de ojos rosado.",img:["eye_cream"],s:"fijo",f:{"Tamaño":"30 ml","Máximo":"$13,23"},note:K},
+  {n:"Medicube PDRN Pink Peptide Serum",d:"Sérum rosado con gotero.",img:["serum"],s:"fijo",f:{"Tamaño":"30 ml","Máximo":"$13,23"},note:K},
+  {n:"Medicube Zero Pore Pad 2.0",d:"Frasco con tapa azul de almohadillas exfoliantes.",img:["zero_pad"],s:"fijo",f:{"Tamaño":"70 pads","Máximo":"$13,23"},note:K},
+  {n:"Medicube PDRN Collagen Volume Multi Balm",d:"Bálsamo en barra rosado.",img:["balm"],s:"fijo",f:{"Tamaño":"10 g","Máximo":"$11,90"},note:K},
+  {n:"SKIN1004 Centella, mascarilla de arcilla en barra",d:"Barra rosada de arcilla para poros y grasa.",img:["arcilla"],s:"fijo",f:{"Máximo":"$12,15"},note:K},
+  {n:"Biodance Bio-Collagen Real Deep Mask",d:"Mascarilla de hidrogel, caja de 4.",img:["biodance"],s:"fijo",f:{"Cantidad":"4 mascarillas","Máximo":"$13,99"},note:K},
+  {n:"SKIN1004 Madagascar Centella Poremizing Travel Kit",d:"Caja rosada con montañas y 4 minis para poros: espuma limpiadora, tónico, ampolleta y crema en gel.",img:["centella_kit"],s:"fijo",f:{"Contenido":"4 productos de viaje","Máximo":"$25"},note:K},
+  {n:"Starface Hydro-Stars, Starter Pack",d:"Parches de estrella amarilla para granitos, en el estuche amarillo con carita feliz y espejo.",img:["starface"],s:"fijo",f:{"Referencia":"$39.800 a $54.300 COP"},note:"Target, Ulta, CVS o Walgreens. También venden los repuestos de estrellas sin estuche."},
+  {n:"Protector solar (uno)",d:"Cualquiera de estos. ISDIN Fusion Water Magic Oil Control SPF 50 (frasco azul, 50 ml): aquí cuesta $113.600 COP, así que si allá sale más caro que eso, no vale la pena.",img:["isdin","cerave","skin1004_sun","medicube_sun"],s:"ref",f:{"CeraVe Mineral SPF 30 tinte":"máx. $13,99","SKIN1004 Hyalu-Cica SPF 50":"máx. $12,99","Medicube No Cast SPF 50":"máx. $15,12"},note:"ISDIN y CeraVe: CVS, Walgreens o Ulta. SKIN1004 y Medicube: Ulta o Target."},
+ ]},
+ {id:"corporales",name:"Corporales",sub:"Truly y eos suelen estar en Target, Ulta y Walmart.",items:[
+  {n:"Truly: para después del afeitado (uno)",d:"El aceite Soft Serve o el sérum Smooth Legend (rosado).",img:["truly_oil","truly_legend"],s:"ref",f:{"Tamaño":"90 ml","Máximo":"$16,50"}},
+  {n:"Para afeitarse (uno)",d:"Primera opción: el paquete de 3 cremas eos (vainilla, granada-frambuesa y lavanda). Si no, la mantequilla Truly Coco Cloud o el aceite de afeitar eos Cashmere.",img:["eos_cream","truly_coco","eos_oil"],s:"ref",f:{"Pack 3 cremas eos":"máx. $21,60","Truly Coco Cloud":"máx. $32","Aceite eos Cashmere":"máx. $7,97"}},
+  {n:"Loción corporal eos Shea Better",d:"Aroma Vanilla Cashmere o Toasted Marshmallow, la que encuentres.",img:["eos_vanilla","eos_marsh"],s:"ref",f:{"Tamaño":"473 ml","Máximo":"$10,05"}},
+  {n:"Exfoliante Tree Hut Shea Sugar Scrub (uno)",d:"Un solo frasco de 510 g, en uno de estos aromas: Watermelon (sandía, rojo), Golden Vanilla (dorado) o Candy Cane (blanco, edición limitada de Navidad).",img:["th_watermelon","th_vanilla","th_candy"],s:"ref",f:{"Cantidad":"1 frasco","Tamaño":"510 g (18 oz)","Referencia Amazon":"$27.100 a $27.500 COP"},note:"Target, Walmart, Ulta, CVS o Walgreens. Si allá sale más caro que eso en pesos, no vale la pena."},
+  {n:"Vaseline Glazed and Glisten Sunlit Glow",d:"Aceite en gel con brillo, aroma Vanilla Cocoa.",img:["vaseline"],s:"fijo",f:{"Tamaño":"200 ml","Máximo":"$9,21"},note:"Target, Walmart, CVS o Walgreens."},
+ ]},
+ {id:"maquillaje",name:"Maquillaje",sub:"Puedes probar los tonos en el probador antes de escoger.",items:[
+  {n:"e.l.f. Power Grip Primer",d:"Tubo aguamarina de prebase en gel.",img:["elf_primer"],s:"fijo",f:{"Máximo":"$11"},note:"Target, Ulta, CVS o Walgreens."},
+  {n:"Gloss tono café (uno)",d:"NYX Fat Oil Lip Drip en el tono chocolate, o e.l.f. Glow Reviver en uno de los tonos café.",img:["nyx","elf_glow"],s:"ref",f:{"NYX Fat Oil":"máx. $8,99","e.l.f. Glow Reviver":"ref. $32.567 COP"},note:"Target, Ulta, CVS o Walgreens."},
+  {n:"Huda Beauty Easy Bake Loose Powder",d:"Polvo suelto para sellar todo el rostro. Tono Sugar Cookie (translúcido) o Pound Cake.",img:["huda"],s:"fijo",f:{"Tono":"Sugar Cookie o Pound Cake","Máximo":"$40"},note:"Sephora. Si puedes, prueba los dos tonos."},
+ ]},
+ {id:"zapatos",name:"Zapatos",sub:"Outlets de Nike, Puma y Adidas en Dolphin Mall o Sawgrass Mills; también Foot Locker y Champs.",items:[
+  {n:"Chanclas Nike para la casa",d:"Primera opción: Nike ReactX Rejuven8 Slide, rosa con suela durazno. Segunda: Nike Victori One Slide (negra con logo rosado o blanca con logo azul). Si no, otra Nike en tonos rosados o neutros.",img:["nike_reactx","nike_victori"],s:"ref",f:{"Talla":"US 7 (Nike viene en tallas enteras)","Cantidad":"1 par"}},
+  {n:"Sandalias para salir",d:"Primera opción: slide Michael Kors café con monogramas y logo MK dorado. Segunda: sandalia Guess de plataforma negra con velcro.",img:["mk_slide","guess_sandal"],s:"ref",f:{"Talla":"US 6,5 (si no hay, 7)","Cantidad":"1 par"}},
+  {n:"Tenis blancos",d:"Referencia principal: Calvin Klein de plataforma, todos blancos con monograma CK en relieve. Puede ser otra marca, siempre que sean blancos.",img:["ck"],s:"ref",f:{"Talla":"US 6,5 mujer o 5Y"}},
+  {n:"Tenis rosados",d:"Referencias: Nike Dunk Low rosado, Air Jordan 1 Mid rosado claro, Air Jordan 1 Low fucsia, Adidas Samba OG rosados con cordones de satín (aquí $174.965 COP, en talla de niño). El de swoosh rojo al revés (Travis Scott) es solo referencia de colores; es carísimo.",img:["samba_rosa","dunk_rosa","jordan_mid","jordan_low","travis"],s:"ref",f:{"Talla":"US 6,5 mujer o 5Y"},note:"Muchos rosados de Nike y Jordan salen en talla juvenil (GS / Big Kids). Un 5Y equivale más o menos a US 6,5 de mujer y suele ser más barato."},
+  {n:"Tenis rojos",d:"Referencias: Adidas Campus 00s rojos (aquí $349.965 COP) o Puma Speedcat OG rojos (aquí $426.900 COP).",img:["adidas","puma"],s:"ref",f:{"Talla":"US 6,5 mujer, 5,5 hombre o 5Y"},note:"Los Adidas Campus suelen venir en talla de hombre o unisex: 6,5 de mujer ≈ 5,5 de hombre."},
+ ]},
+ {id:"bolsos",name:"Bolsos y billetera",sub:"Outlets de Michael Kors, Guess, Coach y Steve Madden (Dolphin Mall, Sawgrass Mills), o TJ Maxx y Marshalls.",items:[
+  {n:"Bolso café para salir",d:"Lo único fijo es el color: café. Estilo de las fotos: pequeño o mediano, con estampado de logos y detalles dorados.",img:["mk_vanity","guess_bolso"],s:"ref",f:{"Color":"Café"}},
+  {n:"Bolso negro",d:"Sin referencia todavía.",img:[],s:"wa",f:{"Color":"Negro"}},
+  {n:"Bolso o morral para la oficina",d:"Guess o Steve Madden, donde quepa un portátil de 14 pulgadas.",img:[],s:"ref",f:{"Portátil":"14\"","Marcas":"Guess o Steve Madden"},note:"Busca en la etiqueta 'fits up to 14\" laptop' o, mejor, 15\". Si no dice, el bolsillo debe medir por dentro al menos 33 × 23 cm."},
+  {n:"Morral pequeño",d:"Adicional al de la oficina. Estilo de las fotos: estampado de logos Guess o Michael Kors, en palo de rosa o vainilla.",img:["guess_morral","mk_morral"],s:"wa",f:{"Tonos":"Palo de rosa o vainilla"}},
+  {n:"Billetera mediana",d:"Que le quepan billetes, tarjetas y monedas, como la Coach. Rosada (como la Guess de la foto) o café.",img:["coach_wallet","guess_wallet"],s:"ref",f:{"Color":"Rosada o café","Tamaño":"Mediana"}},
+ ]},
+ {id:"ropa",name:"Ropa",sub:"Primark está en Dolphin Mall.",items:[
+  {n:"Pijama del Grinch (Primark)",d:"Conjunto de peluche rosado con el Grinch y un moño rosado, pantalón estampado.",img:["grinch_primark","grinch"],s:"fijo",f:{"Talla":"XS"}},
+  {n:"Segunda pijama (Primark)",d:"De cualquier estilo. Referencias: la de Bratz, el conjunto corto rosado de lunares con tirantes y la de Hello Kitty roja, todas de Primark.",img:["bratz","pijama_lunares","pijama_hellokitty"],s:"wa",f:{"Talla":"XS"}},
+  {n:"Suéter navideño",d:"Sin foto, lo escoges tú; mándame fotos antes de comprarlo.",img:[],s:"wa",f:{"Talla":"XS o S"}},
+  {n:"Camisetas básicas",d:"Estilo de la foto: camiseta básica de marca, como la Calvin Klein blanca con el logo CK bordado en azul claro. Puede ser CK u otra marca parecida.",img:["ck_tee"],s:"ref",f:{"Talla":"XS (Classic Fit)","Cantidad":"Varias, en distintos colores"},note:"Muéstrame por WhatsApp las opciones y cuántas alcanzan con la plata. Outlets de Calvin Klein, Tommy o Guess (Dolphin Mall, Sawgrass Mills), o TJ Maxx y Marshalls."},
+ ]},
+ {id:"otros",name:"Otros",sub:"Stanley suele estar en Target, Dick's Sporting Goods y en tiendas de cocina.",items:[
+  {n:"Termo Stanley IceFlow 2.0",d:"Vaso con pitillo abatible y asa, 30 oz (887 ml). Rosado claro o rosa melocotón.",img:["stanley_rosa","stanley_peach"],s:"ref",f:{"Tamaño":"30 oz","Color":"Rosado claro o rosa melocotón","Referencia Amazon":"$90.400 a $117.200 COP"},note:"Si allá sale más caro que eso en pesos, no vale la pena."},
+ ]},
+];
+
+const TAG={fijo:["t-fijo","Este exacto"],ref:["t-ref","Referencia"],wa:["t-wa","Por WhatsApp"]};
+
+/* Ajustes */
+const WA="573006500408";      /* WhatsApp de Sofía */
+const TRM=3700;               /* pesos por dólar para las referencias en COP */
+const TAX=0.07;               /* impuesto de venta en Miami-Dade */
+
+/* Dónde se consigue cada producto, en el mismo orden de CATS */
+const STORES={ulta:"Ulta",target:"Target",farmacia:"CVS / Walgreens",walmart:"Walmart",sephora:"Sephora",perfumania:"Perfumania",outlets:"Outlets (Dolphin Mall, Sawgrass)",deportes:"Foot Locker / Champs",tjmaxx:"TJ Maxx / Marshalls",dicks:"Dick's Sporting Goods"};
+const WHERE={
+ perfumes:["perfumania outlets","perfumania outlets","perfumania outlets"],
+ skincare:["ulta","ulta target","ulta target","ulta target","ulta target","ulta target","ulta target","ulta target","target ulta farmacia","farmacia ulta target"],
+ corporales:["target ulta walmart","target ulta walmart","target ulta walmart","target walmart ulta farmacia","target walmart farmacia"],
+ maquillaje:["target ulta farmacia","target ulta farmacia","sephora"],
+ zapatos:["outlets deportes","outlets tjmaxx","outlets deportes tjmaxx","outlets deportes","outlets deportes"],
+ bolsos:["outlets tjmaxx","outlets tjmaxx","outlets tjmaxx","outlets tjmaxx","outlets tjmaxx"],
+ ropa:["outlets","outlets","outlets tjmaxx target","outlets tjmaxx"],
+ otros:["target dicks"],
+};
+
+/* Rótulo sobre cada foto: orden de preferencia o nombre de la opción */
+const CAP={
+ althea_duo:"1ª · Kit crema + bruma",althea_crema:"Si no hay kit · Crema 50 ml",althea_mist:"Si no hay kit · Bruma 100 ml",
+ isdin:"ISDIN Fusion Water",cerave:"CeraVe Mineral SPF 30",skin1004_sun:"SKIN1004 Hyalu-Cica",medicube_sun:"Medicube No Cast",
+ truly_oil:"Soft Serve (aceite)",truly_legend:"Smooth Legend (sérum)",
+ eos_cream:"1ª · Pack 3 cremas eos",truly_coco:"2ª · Truly Coco Cloud",eos_oil:"2ª · Aceite eos Cashmere",
+ eos_vanilla:"Vanilla Cashmere",eos_marsh:"Toasted Marshmallow",
+ th_watermelon:"Watermelon",th_vanilla:"Golden Vanilla",th_candy:"Candy Cane",
+ nyx:"NYX Fat Oil",elf_glow:"e.l.f. Glow Reviver",
+ nike_reactx:"1ª · Nike ReactX Rejuven8",nike_victori:"2ª · Nike Victori One",
+ mk_slide:"1ª · Michael Kors",guess_sandal:"2ª · Guess plataforma",
+ samba_rosa:"Adidas Samba OG",dunk_rosa:"Nike Dunk Low",jordan_mid:"Jordan 1 Mid",jordan_low:"Jordan 1 Low",travis:"Solo referencia de color",
+ adidas:"Adidas Campus 00s",puma:"Puma Speedcat OG",
+ mk_vanity:"Michael Kors",guess_bolso:"Guess",guess_morral:"Guess",mk_morral:"Michael Kors",
+ coach_wallet:"Así de grande",guess_wallet:"Este color",
+ stanley_rosa:"Rosado claro",stanley_peach:"Rosa melocotón",
+ bratz:"Bratz",pijama_lunares:"Lunares rosa, corta",pijama_hellokitty:"Hello Kitty roja",
+ grinch_primark:"Foto oficial de Primark",
+};
+
+/* Precios: pesos a dólares y precio máximo en la etiqueta (antes del impuesto) */
+const fmt=n=>n.toFixed(2).replace(".",",");
+const num=s=>s.includes(".")&&!s.includes(",")&&s.split(".").pop().length===3?+s.replace(/\./g,""):+s.replace(/\./g,"").replace(",",".");
+const cop=s=>String(s).replace(/\$([\d.]+)(?: a \$([\d.]+))? COP/g,(m,a,b)=>`${m} <span class="usd">≈ US$${fmt(num(a)/TRM)}${b?` a ${fmt(num(b)/TRM)}`:""}</span>`);
+function shelf(v){
+  const vals=[...String(v).matchAll(/\$([\d.,]+)/g)].map(m=>num(m[1].replace(/[.,]$/,"")));
+  if(!vals.length)return null;
+  const usd=/COP/.test(v)?Math.max(...vals)/TRM:vals[0];
+  return usd/(1+TAX);
+}
+
+/* Estado por producto: "ok" comprado, "na" no había. Migra el formato viejo (true). */
+let state={};try{const raw=JSON.parse(localStorage.getItem("miami-done")||"{}");for(const k in raw){if(raw[k]===true||raw[k]==="ok")state[k]="ok";else if(raw[k]==="na")state[k]="na"}}catch(e){}
+const save=()=>{try{localStorage.setItem("miami-done",JSON.stringify(state))}catch(e){}};
+let store="";try{store=localStorage.getItem("miami-store")||""}catch(e){}
+/* Búsqueda: sin tildes ni mayúsculas; todas las palabras deben aparecer */
+const norm=s=>String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+let words=[],rawQ="";
+if(!STORES[store])store="";
+
+const $=s=>document.querySelector(s);
+const nav=$("#nav"),main=$("#main");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const items=[];
+
+for(const c of CATS){
+  const a=document.createElement("a");a.href="#"+c.id;a.dataset.id=c.id;a.innerHTML=`${c.name}<span class="n">${c.items.length}</span>`;nav.appendChild(a);
+  const sec=document.createElement("section");sec.id=c.id;
+  sec.innerHTML=`<h2>${c.name}<span class="h-n">${c.items.length}</span></h2><p class="sub">${c.sub}</p><div class="grid"></div>`;
+  const g=sec.querySelector(".grid");
+  c.items.forEach((it,i)=>{
+    const key=c.id+i,where=(WHERE[c.id][i]||"").split(" ").filter(Boolean);
+    const gallery=it.img.length
+      ?`<div class="gallery"><div class="pics">${it.img.map((p,j)=>`<figure class="pic">${CAP[p]?`<figcaption class="opt ${/^1ª/.test(CAP[p])?"first":/^Solo/.test(CAP[p])?"only-ref":""}">${CAP[p]}</figcaption>`:""}<img src="img/${p}.jpg" alt="${esc(it.n)}, foto ${j+1} de ${it.img.length}" loading="lazy" decoding="async" width="900" height="600" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'noimg',textContent:'No cargó la foto'}))"></figure>`).join("")}</div>${it.img.length>1?`<button type="button" class="arrow prev" aria-label="Foto anterior" disabled><svg aria-hidden="true"><use href="#i-left"/></svg></button><button type="button" class="arrow next" aria-label="Foto siguiente"><svg aria-hidden="true"><use href="#i-right"/></svg></button><div class="dots" aria-hidden="true">${it.img.map((_,j)=>`<i class="${j?"":"on"}"></i>`).join("")}</div>`:""}</div>`
+      :`<div class="noimg"><svg aria-hidden="true"><use href="#${it.s==="wa"?"i-chat":"i-image"}"/></svg>${it.s==="wa"?"Lo escogemos por WhatsApp":"Sin foto de referencia"}</div>`;
+    const dl=Object.entries(it.f).map(([k,v])=>{const sh=shelf(v);return `<dt>${k}</dt><dd>${cop(v)}${sh?`<small class="shelf">Etiqueta hasta $${fmt(sh)}</small>`:""}</dd>`}).join("");
+    const msg=it.s==="wa"?`Hola Hermanitaaa, estoy viendo opciones de: ${it.n}. Te mando fotos.`:`Hola Hermanitaaa, encontré: ${it.n}. Precio en la etiqueta: $`;
+    const el=document.createElement("article");el.className="item";el.dataset.key=key;
+    el.innerHTML=`${gallery}<div class="body"><div class="tags"><span class="tag ${TAG[it.s][0]}">${TAG[it.s][1]}</span>${it.img.length>1?`<span class="tag t-ref">${it.img.length} fotos · desliza</span>`:""}</div><h3>${it.n}</h3><p class="desc">${cop(it.d)}</p><dl>${dl}</dl>${it.note?`<p class="note"><svg aria-hidden="true"><use href="#i-pin"/></svg><span>${cop(it.note)}</span></p>`:""}<div class="actions"><button type="button" class="buy" role="checkbox" id="c-${key}" aria-checked="false"><span class="t-check"><svg viewBox="0 0 10.17 10.17" aria-hidden="true"><path d="M1 5.52L3.92 9.17L9.17 1"/></svg></span><span class="buy-label">Lo compré</span></button><div class="minor"><button type="button" class="na" aria-pressed="false"><svg aria-hidden="true"><use href="#i-x"/></svg><span class="na-label">No había</span></button><a class="wa" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" aria-label="Escribir a Sofía por WhatsApp" title="Escribir a Sofía por WhatsApp"><svg aria-hidden="true"><use href="#i-chat"/></svg></a></div></div></div>`;
+    g.appendChild(el);
+    const text=norm([c.name,it.n,it.d,it.note||"",...Object.entries(it.f).flat(),...it.img.map(p=>CAP[p]||"")].join(" "));
+    items.push({key,el,name:it.n,sec,where,text});
+  });
+  main.appendChild(sec);
+}
+$("#total-n").textContent=items.length;
+
+/* Selector de tienda */
+const sel=$("#store");
+sel.innerHTML=`<option value="">Todas las tiendas</option>`+Object.entries(STORES).map(([k,v])=>`<option value="${k}">${v} (${items.filter(i=>i.where.includes(k)).length})</option>`).join("");
+sel.value=store;
+sel.addEventListener("change",()=>{store=sel.value;try{localStorage.setItem("miami-store",store)}catch(e){}applyFilter(true);const top=$("header").getBoundingClientRect().bottom+scrollY;if(scrollY>top)window.scrollTo({top,behavior:reduce?"auto":"smooth"})});
+
+/* Galería: puntos y flechas que siguen la foto visible */
+document.querySelectorAll(".gallery").forEach(gl=>{
+  const pics=gl.querySelector(".pics"),dots=gl.querySelectorAll(".dots i");if(!dots.length)return;
+  const prev=gl.querySelector(".prev"),next=gl.querySelector(".next");
+  const go=d=>pics.scrollBy({left:d*pics.clientWidth,behavior:reduce?"auto":"smooth"});
+  prev.addEventListener("click",()=>go(-1));next.addEventListener("click",()=>go(1));
+  let raf;pics.addEventListener("scroll",()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{const i=Math.round(pics.scrollLeft/pics.clientWidth);dots.forEach((d,j)=>d.classList.toggle("on",j===i));prev.disabled=i<=0;next.disabled=i>=dots.length-1})},{passive:true});
+});
+
+/* Número (transitions.dev: number subtle change) */
+const numEl=$("#done-n");let shown=0;
+function setNumber(next){
+  const prev=String(shown),str=String(next),same=prev.length===str.length;
+  numEl.style.setProperty("--subtle-dir",next>=shown?"1":"-1");
+  numEl.classList.remove("is-animating");numEl.replaceChildren();
+  [...str].forEach((ch,i)=>{
+    if(same&&prev[i]===ch){numEl.append(ch);return}
+    const slot=document.createElement("span");slot.className="t-subtle-slot";
+    if(same){const o=document.createElement("span");o.className="t-subtle-old";o.setAttribute("aria-hidden","true");o.textContent=prev[i];slot.appendChild(o)}
+    const n=document.createElement("span");n.className="t-subtle-new";n.textContent=ch;slot.appendChild(n);numEl.appendChild(slot);
+  });
+  shown=next;void numEl.offsetHeight;numEl.classList.add("is-animating");
+}
+
+/* Filtro (transitions.dev: tabs sliding) */
+const tabs=[...document.querySelectorAll(".t-tab")],pill=$(".t-tabs-pill");let filter="todo";
+function movePill(tab,animate){
+  if(!animate){const t=pill.style.transition;pill.style.transition="none";pill.style.transform=`translateX(${tab.offsetLeft-3}px)`;pill.style.width=`${tab.offsetWidth}px`;void pill.offsetWidth;pill.style.transition=t}
+  else{pill.style.transform=`translateX(${tab.offsetLeft-3}px)`;pill.style.width=`${tab.offsetWidth}px`}
+}
+tabs.forEach(t=>t.addEventListener("click",()=>{tabs.forEach(x=>x.setAttribute("aria-selected",x===t));filter=t.dataset.f;movePill(t,true);applyFilter(true)}));
+
+const EMPTY={
+  todo:["No hay nada aquí","Esa tienda no tiene productos de la lista."],
+  pend:["Nada pendiente","Ya resolviste todo lo de aquí. Revisa Comprados y No había."],
+  ok:["Todavía no hay compras","Cuando toques “Lo compré” en un producto, aparece aquí."],
+  na:["Nada marcado como “No había”","Si no encuentras algo o está agotado, márcalo con “No había” y Sofía lo pide por Amazon."],
+};
+function shows(it){
+  const s=state[it.key];
+  const byState=filter==="todo"||(filter==="pend"&&!s)||filter===s;
+  return byState&&(!store||it.where.includes(store))&&words.every(w=>it.text.includes(w));
+}
+function applyFilter(animate){
+  let visible=0;
+  items.forEach(it=>{const show=shows(it);it.el.hidden=!show;if(show)visible++});
+  document.querySelectorAll("main section").forEach(s=>{const any=[...s.querySelectorAll(".item")].some(e=>!e.hidden);s.hidden=!any;const a=nav.querySelector(`[data-id="${s.id}"]`);if(a)a.hidden=!any});
+  $("#empty").classList.toggle("show",!visible);
+  if(words.length){
+    const ctx=[filter!=="todo"?`en “${tabs.find(t=>t.dataset.f===filter).firstChild.textContent}”`:"",store?`en ${STORES[store]}`:""].filter(Boolean).join(" ");
+    $("#empty-t").textContent="Sin resultados";
+    $("#empty-msg").textContent=`Ningún producto${ctx?" "+ctx:""} coincide con “${rawQ}”. Prueba con otra palabra, como la marca.`;
+  }else{
+    const [t,m]=EMPTY[filter];$("#empty-t").textContent=t;
+    $("#empty-msg").textContent=store&&filter!=="todo"?m+` (Filtrando por ${STORES[store]}.)`:m;
+  }
+  if(animate&&window.gsap&&!reduce){gsap.fromTo("main .item:not([hidden])",{y:8,autoAlpha:0},{y:0,autoAlpha:1,duration:.25,ease:"power3.out",stagger:{each:.015,amount:.15},overwrite:"auto",clearProps:"transform,opacity,visibility"})}
+}
+
+/* Estado de compra */
+function render(item){
+  const s=state[item.key],b=item.el.querySelector(".buy"),na=item.el.querySelector(".na");
+  b.setAttribute("aria-checked",s==="ok");na.setAttribute("aria-pressed",s==="na");
+  item.el.classList.toggle("done",s==="ok");item.el.classList.toggle("missing",s==="na");
+  b.querySelector(".buy-label").textContent=s==="ok"?"Comprado":"Lo compré";
+}
+function update(){
+  const ok=items.filter(i=>state[i.key]==="ok").length,na=items.filter(i=>state[i.key]==="na").length;
+  if(ok!==shown)setNumber(ok);
+  $("#fill").style.transform=`scaleX(${items.length?ok/items.length:0})`;
+  const pb=$("#pbar");pb.setAttribute("aria-valuemax",items.length);pb.setAttribute("aria-valuenow",ok);
+  $("#n-pend").textContent=items.length-ok-na;$("#n-ok").textContent=ok;$("#n-na").textContent=na;
+  $("#na-line").textContent=na?` · ${na} no había`:"";
+}
+const toast=$("#toast");let toastT,last=null;
+function showToast(msg){$("#toast-msg").textContent=msg;toast.classList.add("is-open");clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove("is-open"),3500)}
+function setState(item,next,animateOut=true){
+  const prev=state[item.key];
+  if(next)state[item.key]=next;else delete state[item.key];
+  save();render(item);update();
+  if(filter!=="todo"&&animateOut&&window.gsap&&!reduce){gsap.to(item.el,{autoAlpha:0,y:-4,duration:.15,ease:"power2.out",onComplete:()=>{gsap.set(item.el,{clearProps:"all"});applyFilter(false)}})}
+  else if(filter!=="todo")applyFilter(false);
+  return prev;
+}
+$("#undo").addEventListener("click",()=>{if(!last)return;setState(last.item,last.prev,false);toast.classList.remove("is-open");last=null});
+
+items.forEach(item=>{
+  render(item);
+  const act=(next,label)=>{const prev=setState(item,next);last={item,prev};showToast((next?label:"Pendiente otra vez: ")+item.name)};
+  item.el.querySelector(".buy").addEventListener("click",()=>act(state[item.key]==="ok"?undefined:"ok","Comprado: "));
+  item.el.querySelector(".na").addEventListener("click",()=>act(state[item.key]==="na"?undefined:"na","No había: "));
+});
+shown=items.filter(i=>state[i.key]==="ok").length;numEl.textContent=shown;update();
+if(store)applyFilter(false);
+
+/* Búsqueda en vivo: sin animación por tecla (restricción de movimiento) */
+const qEl=$("#q");
+qEl.addEventListener("input",()=>{rawQ=qEl.value.trim();words=norm(rawQ).split(/\s+/).filter(Boolean);applyFilter(false)});
+qEl.addEventListener("keydown",e=>{if(e.key==="Enter")qEl.blur();if(e.key==="Escape"&&qEl.value){qEl.value="";qEl.dispatchEvent(new Event("input"))}});
+
+/* GSAP solo para cambios de estado (filtro y fichas que salen); sin coreografía al cargar */
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Barra: borde al pegarse y sección activa */
+const bar=$("#bar");
+/* Alto real de la barra para que los saltos a cada sección no queden tapados */
+new ResizeObserver(()=>document.documentElement.style.setProperty("--bar-h",bar.offsetHeight+"px")).observe(bar);
+/* Instrucciones: abiertas la primera vez, plegadas en las siguientes visitas */
+const howto=$("#howto");let seen=false;try{seen=localStorage.getItem("miami-howto")==="seen";localStorage.setItem("miami-howto","seen")}catch(e){}
+howto.open=!seen;
+new IntersectionObserver(([e])=>bar.classList.toggle("stuck",e.intersectionRatio<1),{threshold:[1],rootMargin:"-1px 0px 0px 0px"}).observe(bar);
+const links=[...nav.querySelectorAll("a")];
+const so=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle("active",l.dataset.id===e.target.id));const a=nav.querySelector(`[data-id="${e.target.id}"]`);if(a)nav.scrollTo({left:a.offsetLeft-16,behavior:reduce?"auto":"smooth"})}})},{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("main section").forEach(s=>so.observe(s));
+
+const placePill=()=>movePill(tabs.find(t=>t.getAttribute("aria-selected")==="true"),false);
+placePill();addEventListener("resize",placePill);document.fonts&&document.fonts.ready.then(placePill);
+</script>
+
+</body></html>
