@@ -169,6 +169,8 @@ section[hidden]{display:none}
 .dots i.on{width:16px;background:#fff}
 .noimg{min-height:132px;flex:0 0 100%;display:grid;place-items:center;gap:6px;align-content:center;margin:var(--pad-pic) var(--pad-pic) 0;border-radius:var(--r-pic);background:repeating-linear-gradient(-45deg,var(--accent-soft) 0 12px,color-mix(in oklch,var(--accent-soft) 70%,var(--surface)) 12px 24px);color:var(--accent);font:600 15px var(--display);text-align:center;padding:12px}
 .pics .noimg{margin:0;border-radius:0}
+/* Ficha sin foto: el recuadro no debe estirarse a todo el alto de la ficha (tapaba el texto y los botones) */
+.item > .noimg{flex:none;min-height:120px}
 .noimg svg{width:26px;height:26px}
 .body{padding:var(--pad-card) 16px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
