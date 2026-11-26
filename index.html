@@ -8,6 +8,9 @@
 <meta name="theme-color" content="#f6f1f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#171119" media="(prefers-color-scheme: dark)">
 <link rel="apple-touch-icon" href="img/icon-180.png">
+<!-- Android: instalar como app -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="img/icon-192.png">
 </head><body>
 <title>Lista de compras Miami</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -587,6 +590,9 @@ new IntersectionObserver(([e])=>bar.classList.toggle("stuck",e.intersectionRatio
 const links=[...nav.querySelectorAll("a")];
 const so=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.classList.toggle("active",l.dataset.id===e.target.id));const a=nav.querySelector(`[data-id="${e.target.id}"]`);if(a)nav.scrollTo({left:a.offsetLeft-16,behavior:reduce?"auto":"smooth"})}})},{rootMargin:"-45% 0px -50% 0px"});
 document.querySelectorAll("main section").forEach(s=>so.observe(s));
+
+/* App instalable y uso sin señal */
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 
 const placePill=()=>movePill(tabs.find(t=>t.getAttribute("aria-selected")==="true"),false);
 placePill();addEventListener("resize",placePill);document.fonts&&document.fonts.ready.then(placePill);
