@@ -1,6 +1,6 @@
 /* Service worker: permite instalar la lista como app y abrirla sin señal en las tiendas.
    Al agregar o cambiar fotos, sube el número de VERSION para que los teléfonos las descarguen. */
-const VERSION = "pedidos-v1";
+const VERSION = "pedidos-v2";
 const CORE = [
   "./",
   "index.html",
@@ -66,6 +66,7 @@ const CORE = [
   "img/truly_legend.jpg",
   "img/truly_oil.jpg",
   "img/vaseline.jpg",
+  "img/vans_knu.jpg",
   "img/yara.jpg",
   "img/zero_pad.jpg",
 ];
