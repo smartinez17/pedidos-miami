@@ -390,7 +390,7 @@ footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:v
     <p class="g-sub" id="g-sub"></p>
     <div class="g-track" aria-hidden="true"><i id="g-bar"></i></div>
     <p class="g-left" id="g-left" hidden></p>
-    <label class="g-budget"><span>Presupuesto en dólares (1.266.000 COP a 3.548)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"><span class="g-cop" id="g-budget-cop"></span></span></label>
+    <label class="g-budget"><span>Presupuesto en dólares (1.300.000 COP a 3.548)</span><span class="paid-in"><span aria-hidden="true">$</span><input type="text" inputmode="decimal" id="g-budget" autocomplete="off" placeholder="Sin presupuesto" enterkeyhint="done"><span class="g-cop" id="g-budget-cop"></span></span></label>
     <p class="g-note">Anota en cada producto comprado lo que pagaste en caja, con impuesto. Todo queda guardado en este teléfono.</p>
     <button type="button" class="g-see" id="g-see">Ver lo comprado</button>
   </form>
@@ -511,7 +511,7 @@ function shelf(v){
 let state={};try{const raw=JSON.parse(localStorage.getItem("miami-done")||"{}");for(const k in raw){if(raw[k]===true||raw[k]==="ok")state[k]="ok";else if(raw[k]==="na")state[k]="na"}}catch(e){}
 const save=()=>{try{localStorage.setItem("miami-done",JSON.stringify(state))}catch(e){}};
 /* Gastos: lo que pagó por cada producto (USD, con impuesto) y presupuesto opcional */
-const BUDGET_COP=1266000;     /* presupuesto de Sofía en pesos; se convierte con TRM */
+const BUDGET_COP=1300000;     /* presupuesto de Sofía en pesos; se convierte con TRM */
 const BUDGET_USD=Math.round(BUDGET_COP/TRM*100)/100;
 let paid={},budget=BUDGET_USD;
 /* El presupuesto solo se guarda si ella lo cambia a mano; así, si cambia la tasa, el de Sofía se recalcula.
